@@ -1,8 +1,5 @@
 {
   pkgs,
-  lib,
-  config,
-  inputs,
   ...
 }:
 
@@ -47,8 +44,12 @@
 
   # https://devenv.sh/tests/
   enterTest = ''
+    devenv processes down
     echo "Running tests"
-    git --version | grep --color=auto "${pkgs.git.version}"
+    devenv up --detach
+    # run a simple dagger task as a test
+    dagger -c ".echo hello" | grep hello
+    devenv processes down
   '';
 
   # https://devenv.sh/git-hooks/

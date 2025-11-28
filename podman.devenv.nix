@@ -11,12 +11,17 @@
     ];
     processes.podman-machine-init = {
       exec = ''
-        echo "Initializing Podman machine 'devenv-podman-machine'..."
+        if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine")' -e -r; then
+          exit 0
+        fi
         ${lib.getExe pkgs.podman} machine init --rootful devenv-podman-machine
       '';
     };
     processes.podman-machine-start = {
       exec = ''
+        if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine" and .Running == true)' -e -r; then
+          exit 0
+        fi
         echo "Starting Podman machine 'devenv-podman-machine'..."
         ${lib.getExe pkgs.podman} machine start devenv-podman-machine
       '';
@@ -25,9 +30,6 @@
           podman-machine-init.condition = "process_completed_successfully";
         };
       };
-      #before = [ "devenv:enterShell" ];
-      # Start before entering the shell
-      #before = [ "devenv:enterShell" ];
     };
   };
 }
