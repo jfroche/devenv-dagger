@@ -10,21 +10,39 @@
       pkgs.virtiofsd
     ];
     processes.podman-machine-init = {
-      exec = ''
-        if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine")' -e -r; then
-          exit 0
-        fi
-        ${lib.getExe pkgs.podman} machine init --rootful devenv-podman-machine
-      '';
+      exec = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "podman-machine-init";
+          runtimeInputs = [
+            pkgs.podman
+            pkgs.jq
+          ];
+          text = ''
+            if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine")' -e -r; then
+              exit 0
+            fi
+            podman machine init --rootful devenv-podman-machine
+          '';
+        }
+      );
     };
     processes.podman-machine-start = {
-      exec = ''
-        if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine" and .Running == true)' -e -r; then
-          exit 0
-        fi
-        echo "Starting Podman machine 'devenv-podman-machine'..."
-        ${lib.getExe pkgs.podman} machine start devenv-podman-machine
-      '';
+      exec = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "podman-machine-start";
+          runtimeInputs = [
+            pkgs.podman
+            pkgs.jq
+          ];
+          text = ''
+            if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine" and .Running == true)' -e -r; then
+              exit 0
+            fi
+            echo "Starting Podman machine 'devenv-podman-machine'..."
+            podman machine start devenv-podman-machine
+          '';
+        }
+      );
       process-compose = {
         depends_on = {
           podman-machine-init.condition = "process_completed_successfully";
