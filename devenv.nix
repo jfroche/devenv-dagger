@@ -21,5 +21,6 @@
   git-hooks.hooks = {
     shellcheck.enable = true;
     nixpkgs-fmt.enable = true;
+    actionlint.enable = true;
   };
 }
