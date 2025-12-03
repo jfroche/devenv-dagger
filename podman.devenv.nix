@@ -1,8 +1,11 @@
 { pkgs, lib, ... }:
+let
+  podman-machine-name = "devenv-podman-machine";
+in
 {
   config = {
     env = {
-      CONTAINER_CONNECTION = "devenv-podman-machine";
+      CONTAINER_CONNECTION = "${podman-machine-name}";
     };
     packages = [
       pkgs.podman
@@ -21,10 +24,14 @@
             pkgs.jq
           ];
           text = ''
-            if podman machine list --format json | jq 'any(.[] | (.Name == "devenv-podman-machine"); .)' -e -r; then
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${podman-machine-name}"); .)' -e -r > /dev/null; then
+              echo "Podman machine '${podman-machine-name}' already exists."
+              echo ""
               exit 0
             fi
-            podman machine init --rootful devenv-podman-machine
+            echo "Creating podman machine '${podman-machine-name}'..."
+            echo ""
+            podman machine init --rootful ${podman-machine-name}
           '';
         }
       );
@@ -38,11 +45,14 @@
             pkgs.jq
           ];
           text = ''
-            if podman machine list --format json | jq 'any(.[] | (.Name == "devenv-podman-machine" and .Running == true); .)' -e -r; then
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${podman-machine-name}" and .Running == true); .)' -e -r > /dev/null; then
+              echo "Podman machine '${podman-machine-name}' is running."
+              echo ""
               exit 0
             fi
-            echo "Starting Podman machine 'devenv-podman-machine'..."
-            podman machine start devenv-podman-machine
+            echo "Starting podman machine '${podman-machine-name}'..."
+            echo ""
+            podman machine start ${podman-machine-name}
           '';
         }
       );
