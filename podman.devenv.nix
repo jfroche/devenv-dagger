@@ -21,7 +21,7 @@
             pkgs.jq
           ];
           text = ''
-            if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine")' -e -r; then
+            if podman machine list --format json | jq 'any(.[] | (.Name == "devenv-podman-machine"); .)' -e -r; then
               exit 0
             fi
             podman machine init --rootful devenv-podman-machine
@@ -38,7 +38,7 @@
             pkgs.jq
           ];
           text = ''
-            if podman machine list --format json | jq '.[] | (.Name == "devenv-podman-machine" and .Running == true)' -e -r; then
+            if podman machine list --format json | jq 'any(.[] | (.Name == "devenv-podman-machine" and .Running == true); .)' -e -r; then
               exit 0
             fi
             echo "Starting Podman machine 'devenv-podman-machine'..."
