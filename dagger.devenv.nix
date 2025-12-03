@@ -28,17 +28,21 @@ in
             pkgs.jq
           ];
           text = ''
-            echo "Initializing dagger engine with Podman"
             export CONTAINER_CONNECTION="devenv-podman-machine"
-            if podman ps --format json | jq '.[] | select( .Names[] == "dagger" and .State == "running" )' -e -r; then
+            if podman ps --format json | jq '.[] | select( .Names[] == "dagger" and .State == "running" )' -e -r > /dev/null; then
+              echo "A container named 'dagger' is already running."
+              echo ""
               exit 0
             fi
             if podman ps -a --format json | jq '.[] | select( .Names[] == "dagger" )' -e -r; then
-              echo "Starting existing dagger container..."
+              echo "Starting container named 'dagger'..."
               podman start dagger
+              echo ""
               exit 0
             fi
+            echo "Starting dagger engine with podman..."
             podman run --privileged -d --name dagger -p 6080:6080 registry.dagger.io/engine:v0.19.7
+            echo ""
           '';
         }
       );
