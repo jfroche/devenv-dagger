@@ -7,8 +7,11 @@
     packages = [
       pkgs.podman
       pkgs.qemu
+    ]
+    ++ (pkgs.lib.optionals pkgs.stdenv.isLinux [
       pkgs.virtiofsd
-    ];
+    ]);
+
     processes.podman-machine-init = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
