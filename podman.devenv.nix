@@ -11,8 +11,11 @@ in
       pkgs.podman
       pkgs.qemu
     ]
-    ++ (pkgs.lib.optionals pkgs.stdenv.isLinux [
+    ++ (lib.optionals pkgs.stdenv.isLinux [
       pkgs.virtiofsd
+    ])
+    ++ (lib.optionals pkgs.stdenv.isDarwin [
+      pkgs.vfkit
     ]);
 
     processes.podman-machine-init = {
@@ -31,7 +34,7 @@ in
             fi
             echo "Creating podman machine '${podman-machine-name}'..."
             echo ""
-            podman machine init --rootful ${podman-machine-name}
+            podman --log-level debug machine init --rootful ${podman-machine-name}
           '';
         }
       );
@@ -43,6 +46,7 @@ in
           runtimeInputs = [
             pkgs.podman
             pkgs.jq
+            pkgs.vfkit
           ];
           text = ''
             if podman machine list --format json | jq 'any(.[] | (.Name == "${podman-machine-name}" and .Running == true); .)' -e -r > /dev/null; then
@@ -52,7 +56,7 @@ in
             fi
             echo "Starting podman machine '${podman-machine-name}'..."
             echo ""
-            podman machine start ${podman-machine-name}
+            podman --log-level debug machine start ${podman-machine-name}
           '';
         }
       );

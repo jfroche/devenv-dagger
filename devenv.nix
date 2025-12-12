@@ -9,12 +9,11 @@
 
   # https://devenv.sh/tests/
   enterTest = ''
-    devenv processes down
+    echo "Waiting for processes to be ready"
+    process-compose project is-ready --wait
     echo "Running tests"
-    devenv up --detach
     # run a simple dagger task as a test
     dagger -c ".echo hello" | grep hello
-    devenv processes down
   '';
 
   # https://devenv.sh/git-hooks/
