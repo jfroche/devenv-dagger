@@ -1,11 +1,23 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 let
   podman-machine-name = "devenv-podman-machine";
+  cfg = config.services.podman-machine;
+  types = lib.types;
 in
 {
-  config = {
+  options.services.podman-machine = {
+    enable = lib.mkEnableOption "Podman Machine";
+
+    machineName = lib.mkOption {
+      default = podman-machine-name;
+      type = types.str;
+      description = "Name of the machine to start.";
+    };
+  };
+
+  config = lib.mkIf cfg.enable {
     env = {
-      CONTAINER_CONNECTION = "${podman-machine-name}";
+      CONTAINER_CONNECTION = "${cfg.machineName}";
     };
     packages = [
       pkgs.podman
@@ -27,14 +39,14 @@ in
             pkgs.jq
           ];
           text = ''
-            if podman machine list --format json | jq 'any(.[] | (.Name == "${podman-machine-name}"); .)' -e -r > /dev/null; then
-              echo "Podman machine '${podman-machine-name}' already exists."
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}"); .)' -e -r > /dev/null; then
+              echo "Podman machine '${cfg.machineName}' already exists."
               echo ""
               exit 0
             fi
-            echo "Creating podman machine '${podman-machine-name}'..."
+            echo "Creating podman machine '${cfg.machineName}'..."
             echo ""
-            podman --log-level debug machine init --rootful ${podman-machine-name}
+            podman --log-level debug machine init --rootful ${cfg.machineName}
           '';
         }
       );
@@ -49,14 +61,14 @@ in
             pkgs.vfkit
           ];
           text = ''
-            if podman machine list --format json | jq 'any(.[] | (.Name == "${podman-machine-name}" and .Running == true); .)' -e -r > /dev/null; then
-              echo "Podman machine '${podman-machine-name}' is running."
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}" and .Running == true); .)' -e -r > /dev/null; then
+              echo "Podman machine '${cfg.machineName}' is running."
               echo ""
               exit 0
             fi
-            echo "Starting podman machine '${podman-machine-name}'..."
+            echo "Starting podman machine '${cfg.machineName}'..."
             echo ""
-            podman --log-level debug machine start ${podman-machine-name}
+            podman --log-level debug machine start ${cfg.machineName}
           '';
         }
       );
