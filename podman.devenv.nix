@@ -105,7 +105,7 @@ in
         readiness_probe = {
           exec = {
             command = pkgs.writeShellScript "is-machine-ready" ''
-              test $(podman machine inspect devenv-podman-machine --format '{{.State}}') = "running"
+              CONTAINER_CONNECTION=${cfg.machineName} podman ps
             '';
             initial_delay_seconds = 2;
           };
