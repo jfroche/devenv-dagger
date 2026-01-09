@@ -4,7 +4,6 @@
 , ...
 }:
 let
-  podman-machine-name = "devenv-podman-machine";
   cfg = config.services.podman-machine;
   types = lib.types;
 in
@@ -13,7 +12,7 @@ in
     enable = lib.mkEnableOption "Podman Machine";
 
     machineName = lib.mkOption {
-      default = podman-machine-name;
+      default = "devenv";
       type = types.str;
       description = "Name of the machine to start.";
     };
