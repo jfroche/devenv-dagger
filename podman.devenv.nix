@@ -55,6 +55,24 @@ in
         "devenv:enterTest"
       ];
     };
+
+    scripts."podman-machine-stop" = {
+      exec = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "podman-machine-stop";
+          runtimeInputs = [
+            pkgs.podman
+            pkgs.jq
+          ];
+          text = ''
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}" and .Running == true); .)' -e -r > /dev/null; then
+              podman machine stop ${cfg.machineName}
+            fi
+          '';
+        }
+      );
+    };
+
     processes.podman-machine-start = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
