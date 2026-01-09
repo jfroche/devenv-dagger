@@ -1,4 +1,8 @@
-{ pkgs, lib, config, ... }:
+{ pkgs
+, lib
+, config
+, ...
+}:
 let
   podman-machine-name = "devenv-podman-machine";
   cfg = config.services.podman-machine;
