@@ -93,7 +93,7 @@ in
             fi
             echo "Starting podman machine '${cfg.machineName}'..."
             echo ""
-            podman --log-level debug machine start ${cfg.machineName}
+            podman machine start ${cfg.machineName}
           '';
         }
       );
