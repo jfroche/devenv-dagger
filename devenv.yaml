@@ -6,3 +6,7 @@ inputs:
         follows: nixpkgs
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+
+imports:
+  - ./dagger.devenv.nix
+  - ./podman.devenv.nix
