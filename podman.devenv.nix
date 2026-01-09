@@ -80,8 +80,11 @@ in
           runtimeInputs = [
             pkgs.podman
             pkgs.jq
+          ]
+          ++ (lib.optionals pkgs.stdenv.isDarwin [
             pkgs.vfkit
-          ];
+          ]);
+
           text = ''
             if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}" and .Running == true); .)' -e -r > /dev/null; then
               echo "Podman machine '${cfg.machineName}' is running."
