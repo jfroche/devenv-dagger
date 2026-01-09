@@ -10,9 +10,15 @@ let
     attribute = "processes.dagger-engine-init";
     follows = [ "nixpkgs" ];
   };
+  cfg = config.services.dagger;
 in
 {
-  config = {
+  options.services.dagger = {
+    enable = lib.mkEnableOption "Dagger engine";
+  };
+
+  config = lib.mkIf cfg.enable {
+    services.podman-machine.enable = true;
     env = {
       _EXPERIMENTAL_DAGGER_RUNNER_HOST = "container+podman://dagger";
     };

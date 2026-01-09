@@ -16,7 +16,7 @@
     dagger -c ".echo hello" | grep hello
   '';
 
-  services.podman-machine.enable = true;
+  services.dagger.enable = true;
 
   # https://devenv.sh/git-hooks/
   git-hooks.hooks = {
