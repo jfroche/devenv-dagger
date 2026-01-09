@@ -28,7 +28,7 @@ in
             pkgs.jq
           ];
           text = ''
-            export CONTAINER_CONNECTION="devenv-podman-machine"
+            export CONTAINER_CONNECTION="${config.services.podman-machine.machineName}"
             if podman ps --format json | jq '.[] | select( .Names[] == "dagger" and .State == "running" )' -e -r > /dev/null; then
               echo "A container named 'dagger' is already running."
               echo ""
@@ -36,19 +36,25 @@ in
             fi
             if podman ps -a --format json | jq '.[] | select( .Names[] == "dagger" )' -e -r; then
               echo "Starting container named 'dagger'..."
-              podman start dagger
-              echo ""
-              exit 0
+              exec podman start -a dagger
             fi
             echo "Starting dagger engine with podman..."
-            podman run --privileged -d --name dagger -p 6080:6080 registry.dagger.io/engine:v0.19.7
-            echo ""
+            exec podman run --privileged --name dagger -p 6080:6080 registry.dagger.io/engine:v0.19.7
           '';
         }
       );
       process-compose = {
         depends_on = {
-          podman-machine-start.condition = "process_completed_successfully";
+          podman-machine-start.condition = "process_healthy";
+        };
+        readiness_probe = {
+          exec = {
+            command = pkgs.writeShellScript "is-dagger-ready" ''
+              dagger -s -c ".echo hello"
+            '';
+          };
+          period_seconds = 10;
+          timeout_seconds = 2;
         };
       };
     };

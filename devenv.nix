@@ -4,7 +4,7 @@
 {
   imports = [
     ./podman.devenv.nix
-    # ./dagger.devenv.nix
+    ./dagger.devenv.nix
   ];
 
   # https://devenv.sh/tests/
@@ -17,7 +17,6 @@
   '';
 
   services.podman-machine.enable = true;
-  # services.podman-machine.machineName = "devenv-podman";
 
   # https://devenv.sh/git-hooks/
   git-hooks.hooks = {
