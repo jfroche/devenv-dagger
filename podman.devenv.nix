@@ -30,7 +30,7 @@ in
       pkgs.vfkit
     ]);
 
-    processes.podman-machine-init = {
+    tasks."podman-machine:init" = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
           name = "podman-machine-init";
@@ -46,10 +46,14 @@ in
             fi
             echo "Creating podman machine '${cfg.machineName}'..."
             echo ""
-            podman --log-level debug machine init --rootful ${cfg.machineName}
+            podman machine init --rootful ${cfg.machineName}
           '';
         }
       );
+      before = [
+        "devenv:enterShell"
+        "devenv:enterTest"
+      ];
     };
     processes.podman-machine-start = {
       exec = lib.getExe (
@@ -73,8 +77,6 @@ in
         }
       );
       process-compose = {
-        depends_on = {
-          podman-machine-init.condition = "process_completed_successfully";
         };
       };
     };
