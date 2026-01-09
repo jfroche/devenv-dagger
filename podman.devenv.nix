@@ -107,8 +107,9 @@ in
             command = pkgs.writeShellScript "is-machine-ready" ''
               CONTAINER_CONNECTION=${cfg.machineName} podman ps
             '';
-            initial_delay_seconds = 2;
           };
+          failure_threshold = 15;
+          period_seconds = 1;
         };
         shutdown = {
           command = "podman machine stop ${cfg.machineName}";
