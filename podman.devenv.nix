@@ -102,6 +102,19 @@ in
         }
       );
       process-compose = {
+        is_daemon = true;
+        readiness_probe = {
+          exec = {
+            command = pkgs.writeShellScript "is-machine-ready" ''
+              test $(podman machine inspect devenv-podman-machine --format '{{.State}}') = "running"
+            '';
+            initial_delay_seconds = 2;
+          };
+        };
+        shutdown = {
+          command = "podman machine stop ${cfg.machineName}";
+          timeout_seconds = 10;
+          signal = 9;
         };
       };
     };
