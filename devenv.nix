@@ -1,10 +1,16 @@
-{ ...
+{ pkgs
+, ...
 }:
 
 {
   imports = [
     ./podman.devenv.nix
     ./dagger.devenv.nix
+  ];
+
+
+  packages = [
+    pkgs.git
   ];
 
   # https://devenv.sh/tests/
