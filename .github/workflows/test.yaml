@@ -24,6 +24,12 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Run tests
+        if: runner.os == 'macOS'
+        run: |
+          nix profile install github:NixOS/nixpkgs#devenv
+          devenv test | cat /Users/runner/.cache/pre-commit/pre-commit.log
+      - name: Run tests
+        if: runner.os == 'Linux'
         run: |
           nix profile install github:NixOS/nixpkgs#devenv
           devenv test
