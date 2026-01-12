@@ -84,7 +84,7 @@ in
       );
     };
 
-    processes.podman-machine-start = {
+    processes.podman-machine = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
           name = "podman-machine-start";

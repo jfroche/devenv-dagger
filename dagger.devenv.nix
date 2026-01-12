@@ -51,7 +51,7 @@ in
       );
       process-compose = {
         depends_on = {
-          podman-machine-start.condition = "process_healthy";
+          podman-machine.condition = "process_healthy";
         };
         readiness_probe = {
           exec = {
