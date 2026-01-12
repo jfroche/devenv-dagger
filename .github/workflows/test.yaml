@@ -42,5 +42,5 @@ jobs:
       - name: Run tests
         # if: runner.os == 'Linux'
         run: |
-          nix profile install github:NixOS/nixpkgs#devenv
+          nix profile add github:NixOS/nixpkgs#devenv
           devenv test --option git-hooks.hooks.shellcheck.enable:bool false --option git-hooks.hooks.nixpkgs-fmt.enable:bool false --option git-hooks.hooks.actionlint.enable:bool false
