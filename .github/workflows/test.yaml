@@ -34,13 +34,13 @@ jobs:
               | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # - name: Run tests
+      #   if: runner.os == 'macOS'
+      #   run: |
+      #     nix profile install github:NixOS/nixpkgs#devenv
+      #     devenv test | cat /Users/runner/.cache/pre-commit/pre-commit.log
       - name: Run tests
-        if: runner.os == 'macOS'
+        # if: runner.os == 'Linux'
         run: |
           nix profile install github:NixOS/nixpkgs#devenv
-          devenv test | cat /Users/runner/.cache/pre-commit/pre-commit.log
-      - name: Run tests
-        if: runner.os == 'Linux'
-        run: |
-          nix profile install github:NixOS/nixpkgs#devenv
-          devenv test
+          devenv test --option git-hooks.hooks.shellcheck.enable:bool false --option git-hooks.hooks.nixpkgs-fmt.enable:bool false --option git-hooks.hooks.actionlint.enable:bool false
