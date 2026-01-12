@@ -16,7 +16,7 @@
   # https://devenv.sh/tests/
   enterTest = ''
     echo ""
-    echo "Waiting for processes"
+    echo "Waiting for processes to be ready"
     process-compose project is-ready --wait
     echo ""
     echo "Running tests"
