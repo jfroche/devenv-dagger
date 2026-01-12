@@ -16,7 +16,7 @@
   # https://devenv.sh/tests/
   enterTest = ''
     echo "Waiting for processes to be ready"
-    process-compose project is-ready --wait
+    devenv up -d
     echo "Running tests"
     # run a simple dagger task as a test
     dagger -c ".echo hello" | grep hello
