@@ -119,8 +119,8 @@ in
               CONTAINER_CONNECTION=${cfg.machineName} podman ps
             '';
           };
-          failure_threshold = 15;
-          period_seconds = 1;
+          failure_threshold = 20;
+          period_seconds = 10;
         };
         shutdown = {
           command = "podman machine stop ${cfg.machineName}";

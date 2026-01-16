@@ -60,7 +60,9 @@ in
             '';
           };
           period_seconds = 10;
-          timeout_seconds = 2;
+          initial_delay_seconds = 60;
+          failure_threshold = 20;
+          timeout_seconds = 30;
         };
       };
     };
