@@ -1,0 +1,3 @@
+- Fix process-compose warning with XDG_CONFIG_HOME / process compose - missing environment variable PROC_COMP_CONFIG to control global config file
+- Customize process-compose readiness probe timeout via command line argument in GHA job for macos
+- Devenv should manage keep-project in detached mode (devenv up -d)
