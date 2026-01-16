@@ -34,23 +34,15 @@ jobs:
               | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      # - name: Run tests
-      #   if: runner.os == 'macOS'
-      #   run: |
-      #     nix profile install github:NixOS/nixpkgs#devenv
-      #     devenv test | cat /Users/runner/.cache/pre-commit/pre-commit.log
       - name: Run tests
-        # if: runner.os == 'Linux'
         run: |
           nix profile add github:NixOS/nixpkgs#devenv
+          # Fix process-compose config path lookup
           export XDG_CONFIG_HOME="$HOME/.config"
-          mkdir -p "$XDG_CONFIG_HOME/process-compose"
-          # echo "devenv test --option process.managers.process-compose.tui.enable:bool false --option git-hooks.hooks.shellcheck.enable:bool false --option git-hooks.hooks.nixpkgs-fmt.enable:bool false --option git-hooks.hooks.actionlint.enable:bool false"
-      # - name: Setup tmate session
-        # if: runner.os == 'macOS'
-        # uses: mxschmitt/action-tmate@v3
+          #mkdir -p "$XDG_CONFIG_HOME/process-compose"
+      - name: Setup tmate session
+        if: runner.os == 'macOS'
+        uses: mxschmitt/action-tmate@v3
       - name: Run tests
-        # if: runner.os == 'Linux'
         run: |
-          # devenv test --option process.managers.process-compose.tui.enable:bool false --option git-hooks.hooks.shellcheck.enable:bool false --option git-hooks.hooks.nixpkgs-fmt.enable:bool false --option git-hooks.hooks.actionlint.enable:bool false
           devenv test --option process.managers.process-compose.tui.enable:bool false

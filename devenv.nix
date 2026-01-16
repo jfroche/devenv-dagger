@@ -17,7 +17,7 @@
   enterTest = ''
     echo ""
     echo "Waiting for processes to be ready"
-    process-compose project is-ready --wait
+    PC_TUI_ENABLED=0 process-compose project is-ready --wait
     echo ""
     echo "Running tests"
     # run a simple dagger task as a test
