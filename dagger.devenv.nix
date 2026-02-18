@@ -64,6 +64,11 @@ in
           failure_threshold = 20;
           timeout_seconds = 30;
         };
+        shutdown = {
+          command = "podman stop dagger";
+          timeout_seconds = 10;
+          signal = 9;
+        };
       };
     };
   };
