@@ -39,6 +39,8 @@ in
           runtimeInputs = [
             pkgs.podman
             pkgs.jq
+            pkgs.gawk
+            dagger-nix.packages.${pkgs.stdenv.hostPlatform.system}.dagger
           ];
           text = ''
             export CONTAINER_CONNECTION="${config.services.podman-machine.machineName}"
@@ -52,7 +54,8 @@ in
               exec podman start -a ${cfg.containerName}
             fi
             echo "Starting dagger engine with podman..."
-            exec podman run --privileged --name ${cfg.containerName} -p 6080:6080 registry.dagger.io/engine:v0.19.7
+            dagger_version=$(dagger version | awk '{print $2}')
+            exec podman run --privileged --name ${cfg.containerName} -p 6080:6080 registry.dagger.io/engine:"''${dagger_version}"
           '';
         }
       );
