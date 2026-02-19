@@ -11,16 +11,23 @@ let
     follows = [ "nixpkgs" ];
   };
   cfg = config.services.dagger;
+  types = lib.types;
 in
 {
   options.services.dagger = {
     enable = lib.mkEnableOption "Dagger engine";
+
+    containerName = lib.mkOption {
+      default = "devenv-dagger";
+      type = types.str;
+      description = "Name of the container to start.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
     services.podman-machine.enable = true;
     env = {
-      _EXPERIMENTAL_DAGGER_RUNNER_HOST = "container+podman://dagger";
+      _EXPERIMENTAL_DAGGER_RUNNER_HOST = "container+podman://${cfg.containerName}";
     };
     packages = [
       dagger-nix.packages.${pkgs.stdenv.hostPlatform.system}.dagger
@@ -35,17 +42,17 @@ in
           ];
           text = ''
             export CONTAINER_CONNECTION="${config.services.podman-machine.machineName}"
-            if podman ps --format json | jq '.[] | select( .Names[] == "dagger" and .State == "running" )' -e -r > /dev/null; then
-              echo "A container named 'dagger' is already running."
+            if podman ps --format json | jq '.[] | select( .Names[] == "${cfg.containerName}" and .State == "running" )' -e -r > /dev/null; then
+              echo "A container named '${cfg.containerName}' is already running."
               echo ""
               exit 0
             fi
-            if podman ps -a --format json | jq '.[] | select( .Names[] == "dagger" )' -e -r; then
-              echo "Starting container named 'dagger'..."
-              exec podman start -a dagger
+            if podman ps -a --format json | jq '.[] | select( .Names[] == "${cfg.containerName}" )' -e -r; then
+              echo "Starting container named '${cfg.containerName}'..."
+              exec podman start -a ${cfg.containerName}
             fi
             echo "Starting dagger engine with podman..."
-            exec podman run --privileged --name dagger -p 6080:6080 registry.dagger.io/engine:v0.19.7
+            exec podman run --privileged --name ${cfg.containerName} -p 6080:6080 registry.dagger.io/engine:v0.19.7
           '';
         }
       );
@@ -65,7 +72,7 @@ in
           timeout_seconds = 30;
         };
         shutdown = {
-          command = "podman stop dagger";
+          command = "podman stop ${cfg.containerName}";
           timeout_seconds = 10;
           signal = 9;
         };
