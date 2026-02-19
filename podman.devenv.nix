@@ -33,7 +33,7 @@ in
       pkgs.vfkit
     ]);
 
-    # useless once devenv > 0.11.2 has been released	
+    # useless once devenv > 0.11.2 has been released
     tasks."devenv:git-hooks:install".before = [ "devenv:git-hooks:run" ];
 
     tasks."podman-machine:init" = {
@@ -45,22 +45,22 @@ in
             pkgs.jq
           ];
           text = ''
-                                    if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}"); .)' -e -r > /dev/null; then
-                                      echo "Podman machine '${cfg.machineName}' already exists."
-                                      echo ""
-                                      exit 0
-                                    fi
-                                    echo "Creating podman machine '${cfg.machineName}'..."
-                                    echo ""
-                                    podman machine init --rootful ${cfg.machineName}
-                        	    # disable selinux
-            		    # TODO move to specific task for dagger
-                                    podman machine start ${cfg.machineName}
-                                    podman machine ssh ${cfg.machineName} sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux 
-                                    podman machine stop ${cfg.machineName}
-                                    podman machine start ${cfg.machineName}
-                                    podman machine ssh ${cfg.machineName} sestatus | grep disabled
-                                    podman machine stop ${cfg.machineName}
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}"); .)' -e -r > /dev/null; then
+              echo "Podman machine '${cfg.machineName}' already exists."
+              echo ""
+              exit 0
+            fi
+            echo "Creating podman machine '${cfg.machineName}'..."
+            echo ""
+            podman machine init --rootful ${cfg.machineName}
+            # disable selinux
+            # TODO move to specific task for dagger
+            podman machine start ${cfg.machineName}
+            podman machine ssh ${cfg.machineName} sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux 
+            podman machine stop ${cfg.machineName}
+            podman machine start ${cfg.machineName}
+            podman machine ssh ${cfg.machineName} sestatus | grep disabled
+            podman machine stop ${cfg.machineName}
           '';
         }
       );
