@@ -54,8 +54,12 @@ in
               exec podman start -a ${cfg.containerName}
             fi
             echo "Starting dagger engine with podman..."
+            if ! podman volume exists dagger-cache; then
+              echo "Creating dagger-cache volume"
+              podman volume create dagger-cache
+            fi
             dagger_version=$(dagger version | awk '{print $2}')
-            exec podman run --privileged --name ${cfg.containerName} -p 6080:6080 registry.dagger.io/engine:"''${dagger_version}"
+            exec podman run --privileged --name ${cfg.containerName} -p 6080:6080 -v dagger-cache:/var/lib/dagger registry.dagger.io/engine:"''${dagger_version}"
           '';
         }
       );
