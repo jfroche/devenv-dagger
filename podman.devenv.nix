@@ -33,9 +33,6 @@ in
       pkgs.vfkit
     ]);
 
-    # useless once devenv > 0.11.2 has been released
-    tasks."devenv:git-hooks:install".before = [ "devenv:git-hooks:run" ];
-
     tasks."podman-machine:init" = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
