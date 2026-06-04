@@ -67,10 +67,10 @@ in
       ];
     };
 
-    scripts."podman-machine-stop" = {
+    scripts."pmdown" = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
-          name = "podman-machine-stop";
+          name = "pmdown";
           runtimeInputs = [
             pkgs.podman
             pkgs.jq
@@ -78,6 +78,67 @@ in
           text = ''
             if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}" and .Running == true); .)' -e -r > /dev/null; then
               podman machine stop ${cfg.machineName}
+            else
+              echo "Podman machine ${cfg.machineName} is already down."
+              exit 1
+            fi
+          '';
+        }
+      );
+    };
+
+    scripts."pmup" = {
+      exec = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "pmup";
+          runtimeInputs = [
+            pkgs.podman
+            pkgs.jq
+          ];
+          text = ''
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}" and .Running != true); .)' -e -r > /dev/null; then
+              podman machine start ${cfg.machineName}
+            else
+              echo "Podman machine ${cfg.machineName} is already up."
+              exit 1
+            fi
+          '';
+        }
+      );
+    };
+
+    scripts."pmst" = {
+      exec = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "pmst";
+          runtimeInputs = [
+            pkgs.podman
+            pkgs.ripgrep
+          ];
+          text = ''
+            podman machine ls | rg --color=never "VM TYPE"
+            podman machine ls | rg --color=never "${cfg.machineName}"
+            echo ""
+          '';
+        }
+      );
+    };
+
+
+    scripts."pmexists" = {
+      exec = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "pmexists";
+          runtimeInputs = [
+            pkgs.podman
+            pkgs.jq
+          ];
+          text = ''
+            if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}" and .Running == true); .)' -e -r > /dev/null; then
+               echo "Podman machine '${cfg.machineName}' is running..."
+               exit 0
+            else
+              exit 1
             fi
           '';
         }
@@ -87,7 +148,7 @@ in
     processes.podman-machine = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
-          name = "podman-machine-start";
+          name = "podman-machine";
           runtimeInputs = [
             pkgs.podman
             pkgs.jq
@@ -97,33 +158,30 @@ in
           ]);
 
           text = ''
-            if podman machine list --format json | jq 'any(.[] | (.Name == "${cfg.machineName}" and .Running == true); .)' -e -r > /dev/null; then
-              echo "Podman machine '${cfg.machineName}' is running."
-              echo ""
-              exit 0
+            trap 'exit 130' INT
+            trap 'exit 143' TERM
+            if pmexists; then
+              echo "and will not be stopped."
+            else
+              cleanup() {
+                pmdown
+                exit 0
+              }
+              trap cleanup EXIT
+
+              pmup
             fi
-            echo "Starting podman machine '${cfg.machineName}'..."
-            echo ""
-            podman machine start ${cfg.machineName}
+            sleep infinity &
+            wait $!
           '';
         }
       );
-      process-compose = {
-        is_daemon = true;
-        readiness_probe = {
-          exec = {
-            command = pkgs.writeShellScript "is-machine-ready" ''
-              CONTAINER_CONNECTION=${cfg.machineName} podman ps
-            '';
-          };
-          failure_threshold = 20;
-          period_seconds = 10;
-        };
-        shutdown = {
-          command = "podman machine stop ${cfg.machineName}";
-          timeout_seconds = 10;
-          signal = 9;
-        };
+      ready = {
+        exec = "CONTAINER_CONNECTION=${cfg.machineName} podman ps";
+        initial_delay = 1;
+        period = 3;
+        probe_timeout = 2;
+        failure_threshold = 6;
       };
     };
   };
