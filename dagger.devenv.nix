@@ -44,12 +44,16 @@ in
             dagger-nix.packages.${pkgs.stdenv.hostPlatform.system}.dagger
           ];
           text = ''
+            PS4='+ ''${EPOCHREALTIME} '
+            exec 2>&1
+            set -x
             echo "Checking if podman machine is running."
             if podman machine list --format json | jq 'any(.[] | (.Name == "${config.services.podman-machine.machineName}" and .Running != true); .)' -e -r > /dev/null; then
               echo "Podman machine ${config.services.podman-machine.machineName} is not started."
               exit 0
             fi
             echo "Checking if dagger engine image has been pulled."
+            time dagger version
             dagger_version=$(dagger version | awk '{print $2}')
             image_name="registry.dagger.io/engine:''${dagger_version}"
             if podman image exists "''${image_name}"; then
@@ -113,7 +117,10 @@ in
         pkgs.writeShellApplication {
           name = "dagger-pull-engine-task";
           text = ''
-            dagger-pull-engine
+            for i in {1..3}; do
+              echo "--- Run $i ---"
+              time dagger-pull-engine
+            done
           '';
         }
       );
