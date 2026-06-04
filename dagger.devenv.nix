@@ -64,16 +64,54 @@ in
       );
     };
 
-    tasks."dagger:pull-engine" = {
+    scripts."dagger-engine-init" = {
       exec = lib.getExe (
         pkgs.writeShellApplication {
-          name = "dagger-pull-engine";
+          name = "dagger-engine-init";
           runtimeInputs = [
             pkgs.podman
             pkgs.jq
             pkgs.gawk
             dagger-nix.packages.${pkgs.stdenv.hostPlatform.system}.dagger
           ];
+          text = ''
+            containerName="${cfg.containerName}"
+            if ! podman container exists "$containerName"; then
+              if ! podman volume exists dagger-cache; then
+                echo "Creating dagger-cache volume"
+                podman volume create dagger-cache
+              fi
+              dagger-pull-engine
+              echo "Starting dagger engine with podman..."
+              daggerVersion=$(dagger version | awk '{print $2}')
+              podman run --privileged --name ${cfg.containerName} -p 6080:6080 -v dagger-cache:/var/lib/dagger registry.dagger.io/engine:"''${daggerVersion}"
+            else
+              currentImage=$(podman container inspect dagger | jq '.[0].ImageName' | tr -d '"')
+              daggerVersion=$(dagger version | awk '{print $2}')
+              if [[ "$currentImage" == *"$daggerVersion" ]]; then
+                if [ "$(podman inspect --format '{{.State.Running}}' $containerName 2>/dev/null)" = "true" ]; then
+                  echo "Dagger engine is already running."
+                else
+                  echo "Starting existing container named '$containerName'."
+                  exec podman start -a "$containerName"
+                fi
+              else
+                echo "The running container is built from '$currentImage'."
+                echo "It might not be compatible with dagger version '$daggerVersion'."
+                echo "Please make a decision like renaming it :"
+                echo "$ podman rename $containerName myOtherName"
+                exit 1
+              fi
+            fi
+          '';
+        }
+      );
+    };
+
+    tasks."dagger:pull-engine" = {
+      exec = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "dagger-pull-engine-task";
           text = ''
             dagger-pull-engine
           '';
@@ -91,35 +129,7 @@ in
       dagger core -s version > /dev/null 2>&1
     '';
     processes.dagger-engine = {
-      exec = lib.getExe (
-        pkgs.writeShellApplication {
-          name = "dagger-engine-init";
-          runtimeInputs = [
-            pkgs.podman
-            pkgs.jq
-            pkgs.gawk
-            dagger-nix.packages.${pkgs.stdenv.hostPlatform.system}.dagger
-          ];
-          text = ''
-            if podman ps --format json | jq '.[] | select( .Names[] == "${cfg.containerName}" and .State == "running" )' -e -r > /dev/null; then
-              echo "A container named '${cfg.containerName}' is already running."
-              echo ""
-            elif podman ps -a --format json | jq '.[] | select( .Names[] == "${cfg.containerName}" )' -e -r; then
-              echo "Starting existing container named '${cfg.containerName}'..."
-              exec podman start -a ${cfg.containerName}
-            else
-              if ! podman volume exists dagger-cache; then
-                echo "Creating dagger-cache volume"
-                podman volume create dagger-cache
-              fi
-              dagger-pull-engine
-              echo "Starting dagger engine with podman..."
-              dagger_version=$(dagger version | awk '{print $2}')
-              podman run --privileged --name ${cfg.containerName} -p 6080:6080 -v dagger-cache:/var/lib/dagger registry.dagger.io/engine:"''${dagger_version}"
-            fi
-          '';
-        }
-      );
+      exec = "dagger-engine-init";
       after = [ "devenv:processes:podman-machine@ready" ];
       ready = {
         exec = "dagger-ready-probe";

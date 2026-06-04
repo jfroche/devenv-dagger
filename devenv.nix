@@ -6,6 +6,7 @@
 
   packages = [
     pkgs.git
+    pkgs.jq
   ];
 
   # https://devenv.sh/tests/
