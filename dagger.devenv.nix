@@ -86,7 +86,7 @@ in
               daggerVersion=$(dagger version | awk '{print $2}')
               podman run --privileged --name ${cfg.containerName} -p 6080:6080 -v dagger-cache:/var/lib/dagger registry.dagger.io/engine:"''${daggerVersion}"
             else
-              currentImage=$(podman container inspect dagger | jq '.[0].ImageName' | tr -d '"')
+              currentImage=$(podman container inspect "$containerName" | jq '.[0].ImageName' | tr -d '"')
               daggerVersion=$(dagger version | awk '{print $2}')
               if [[ "$currentImage" == *"$daggerVersion" ]]; then
                 if [ "$(podman inspect --format '{{.State.Running}}' $containerName 2>/dev/null)" = "true" ]; then
@@ -96,7 +96,7 @@ in
                   exec podman start -a "$containerName"
                 fi
               else
-                echo "The running container is built from '$currentImage'."
+                echo "The existing container '$containerName' is built from '$currentImage'."
                 echo "It might not be compatible with dagger version '$daggerVersion'."
                 echo "Please make a decision like renaming it :"
                 echo "$ podman rename $containerName myOtherName"
