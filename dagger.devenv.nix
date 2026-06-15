@@ -12,6 +12,10 @@ let
   };
   cfg = config.services.dagger;
   types = lib.types;
+  engineToml = pkgs.writeText "engine.toml" ''
+    [registry."docker.io"]
+    mirrors = ["mirror.gcr.io"]
+  '';
 in
 {
   options.services.dagger = {
@@ -84,7 +88,12 @@ in
               dagger-pull-engine
               echo "Starting dagger engine with podman..."
               daggerVersion=$(dagger version | awk '{print $2}')
-              podman run --privileged --name ${cfg.containerName} -p 6080:6080 -v dagger-cache:/var/lib/dagger registry.dagger.io/engine:"''${daggerVersion}"
+              podman machine ssh ${config.services.podman-machine.machineName} -- \
+                 'mkdir -p /etc/dagger && test -f /etc/dagger/engine.toml || cat > /etc/dagger/engine.toml' < ${engineToml}
+              podman run --privileged --security-opt label=disable --name ${cfg.containerName} -p 6080:6080 \
+                 -v dagger-cache:/var/lib/dagger \
+                 -v /etc/dagger/engine.toml:/etc/dagger/engine.toml:ro \
+                 registry.dagger.io/engine:"''${daggerVersion}"
             else
               currentImage=$(podman container inspect "$containerName" | jq '.[0].ImageName' | tr -d '"')
               daggerVersion=$(dagger version | awk '{print $2}')
