@@ -6,6 +6,10 @@
 let
   cfg = config.services.podman-machine;
   types = lib.types;
+  podmanHelpersConf = pkgs.writeText "containers-override.conf" ''
+    [engine]
+    helper_binaries_dir = ["${pkgs.gvproxy}/bin", "${pkgs.qemu}/bin"]
+  '';
 in
 {
   options.services.podman-machine = {
@@ -21,6 +25,8 @@ in
   config = lib.mkIf cfg.enable {
     env = {
       CONTAINER_CONNECTION = "${cfg.machineName}";
+    } // lib.optionalAttrs pkgs.stdenv.isLinux {
+      CONTAINERS_CONF_OVERRIDE = "${podmanHelpersConf}";
     };
     packages = [
       pkgs.podman
@@ -28,6 +34,7 @@ in
     ]
     ++ (lib.optionals pkgs.stdenv.isLinux [
       pkgs.virtiofsd
+      pkgs.gvproxy
     ])
     ++ (lib.optionals pkgs.stdenv.isDarwin [
       pkgs.vfkit
