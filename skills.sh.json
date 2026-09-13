@@ -1,0 +1,13 @@
+{
+  "$schema": "https://skills.sh/schema.json",
+  "name": "devenv-dagger",
+  "description": "AI agent skills for bootstrapping devenv projects with devenv-dagger modules (Dagger engine on a Podman machine).",
+  "skills": [
+    {
+      "name": "devenv-dagger-init",
+      "path": "skills/devenv-dagger-init",
+      "entrypoint": "SKILL.md",
+      "description": "Initialize a new devenv project with devenv-dagger modules (Dagger engine on a Podman machine)"
+    }
+  ]
+}
