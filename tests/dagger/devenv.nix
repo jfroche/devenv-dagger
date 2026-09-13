@@ -1,0 +1,4 @@
+{ ... }:
+{
+  services.dagger.enable = true;
+}

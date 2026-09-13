@@ -1,0 +1,8 @@
+inputs:
+  upstream-devenv:
+    url: github:cachix/devenv?dir=src/modules
+  dagger-nix:
+    url: github:dagger/nix
+    inputs:
+      nixpkgs:
+        follows: nixpkgs

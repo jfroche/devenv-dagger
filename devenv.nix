@@ -11,26 +11,8 @@
 
   # https://devenv.sh/tests/
   enterTest = ''
-    timeout 30 bash -c 'until pmexists; do sleep 1; done'
-    echo "Running tests"
-    # run a simple dagger task as a test
+    wait_for_processes
     dagger -c ".echo hello" | grep hello
-    echo "check pmexists"
-    pmexists
-    echo "stop dagger-engine"
-    devenv processes stop dagger-engine
-    echo "check pmup"
-    ! pmup
-    echo "check pmdown"
-    pmdown
-    echo "check pmexists"
-    ! pmexists
-    echo "check pmdown"
-    ! pmdown
-    echo "check pmup"
-    pmup
-    pmexists
-    pmdown
   '';
 
   services.dagger.enable = true;
