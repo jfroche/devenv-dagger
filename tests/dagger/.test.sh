@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -e
 
 wait_for_processes
