@@ -1,0 +1,19 @@
+{ pkgs, ... }:
+
+{
+  packages = [ pkgs.git ];
+
+  # services.dagger = {
+  #   enable = true;   # auto-enables services.podman-machine
+  #   # containerName = "devenv-dagger";
+  # };
+
+  # services.podman-machine = {
+  #   enable = true;
+  #   # machineName = "devenv";
+  # };
+
+  enterShell = ''
+    echo "devenv-dagger devenv ready. Try: devenv up"
+  '';
+}
