@@ -34,12 +34,7 @@ jobs:
               | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      - name: Install devenv
+        run: nix profile add github:NixOS/nixpkgs#devenv
       - name: Run tests
-        run: |
-          nix profile add github:NixOS/nixpkgs#devenv
-          # Fix process-compose config path lookup
-          export XDG_CONFIG_HOME="$HOME/.config"
-          mkdir -p "$XDG_CONFIG_HOME/process-compose"
-      - name: Run tests
-        run: |
-          devenv test --option process.managers.process-compose.tui.enable:bool false
+        run: devenv test
