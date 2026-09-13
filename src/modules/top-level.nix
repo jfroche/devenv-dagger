@@ -6,6 +6,5 @@
     ./podman.nix
   ];
 
-  config = {
-  };
+  config = { };
 }
