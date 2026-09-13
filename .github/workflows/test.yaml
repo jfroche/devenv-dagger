@@ -38,3 +38,27 @@ jobs:
         run: nix profile add github:NixOS/nixpkgs#devenv
       - name: Run tests
         run: devenv test
+
+  devenv-build-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31.9.0
+      - name: restore and save nix store
+        uses: nix-community/cache-nix-action@v7.0.0
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 1G
+          purge: true
+          purge-prefixes: nix-${{ runner.os }}-
+          purge-created: 0
+          purge-last-accessed: 0
+          purge-primary-key: never
+      - name: Install devenv
+        run: nix profile add github:NixOS/nixpkgs#devenv
+      # GitHub-hosted macOS runners are virtualized M1 instances: no nested
+      # virtualization, so podman machine cannot start and `devenv test`
+      # cannot run. Build-only smoke test until runners support it.
+      - name: Build devenv shell
+        run: devenv build
