@@ -10,6 +10,10 @@ let
     [engine]
     helper_binaries_dir = ["${pkgs.gvproxy}/bin", "${pkgs.qemu}/bin"]
   '';
+  initFlags = lib.concatStringsSep " " (
+    (lib.optional (cfg.memoryMiB != null) "--memory ${toString cfg.memoryMiB}")
+    ++ (lib.optional (cfg.cpus != null) "--cpus ${toString cfg.cpus}")
+  );
 in
 {
   options.services.podman-machine = {
@@ -19,6 +23,18 @@ in
       default = "devenv";
       type = types.str;
       description = "Name of the machine to start.";
+    };
+
+    memoryMiB = lib.mkOption {
+      default = null;
+      type = types.nullOr types.ints.positive;
+      description = "Memory size in MiB for the Podman machine, passed to `podman machine init --memory`. Null keeps podman's default. Applies only when the machine is created; for an existing machine use `podman machine set --memory`.";
+    };
+
+    cpus = lib.mkOption {
+      default = null;
+      type = types.nullOr types.ints.positive;
+      description = "Number of CPUs for the Podman machine, passed to `podman machine init --cpus`. Null keeps podman's default. Applies only when the machine is created; for an existing machine use `podman machine set --cpus`.";
     };
   };
 
@@ -56,7 +72,7 @@ in
             fi
             echo "Creating podman machine '${cfg.machineName}'..."
             echo ""
-            podman machine init --rootful ${cfg.machineName}
+            podman machine init --rootful ${initFlags} ${cfg.machineName}
             # disable selinux
             # TODO move to specific task for dagger
             podman machine start ${cfg.machineName}

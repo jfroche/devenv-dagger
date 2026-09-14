@@ -71,6 +71,8 @@ Usable on its own. Sets `CONTAINER_CONNECTION` in the environment.
   services.podman-machine = {
     enable = true;
     # machineName = "devenv";
+    # memoryMiB = 8192; # podman machine init --memory
+    # cpus = 6; # podman machine init --cpus
   };
 }
 ```
